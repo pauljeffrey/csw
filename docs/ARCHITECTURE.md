@@ -162,7 +162,7 @@ The pipeline has five stages. Every stage reads and writes plain files below one
 | `judge_fixes` | What the two LLM judges said about a row, turned into (a) corrected copies of the row, (b) the fields they rejected, (c) a curated evaluation set. |
 | `make_base` | Build the starting checkpoint (tokenizer slots renamed, embeddings initialised). |
 | `merge_repairs` | Merge the hm repair into the rows without discarding the old values. |
-| `mt_gen` | Translations of English sentences by the translator model (BeardedMonster/gemma-3-270m-translate-rl2c) for the evaluator's natural-low-quality data. |
+| `mt_gen` | Translations of English sentences by the translator model (the model named by `CSW_BASE_MODEL`) for the evaluator's natural-low-quality data. |
 | `push` | Push a trained checkpoint to the Hub. |
 | `rewards` | Rule-based rewards for GRPO on the code-switcher (used next to the learned quality estimator). |
 | `tokens` | Added tokens of the code-switcher (task tags, plan brackets, language tags). |
