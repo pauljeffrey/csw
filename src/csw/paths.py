@@ -36,6 +36,14 @@ def env_value(name: str, default: str | None = None) -> str | None:
     return os.environ.get(name, default)
 
 
+def require_env(name: str, what: str) -> str:
+    """Value of a repository or model identifier that is deliberately not stored in the source tree; stops with a clear message when unset."""
+    v = env_value(name)
+    if not v:
+        raise SystemExit(f"{name} is not set ({what}); see .env.example")
+    return v
+
+
 SRC_DIR = Path(__file__).resolve().parents[1]
 
 

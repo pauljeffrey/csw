@@ -1,11 +1,11 @@
 """Push a trained csw checkpoint to the Hub: private repo first; a model card only if it stays private.
-python -m csw.sft.push --src work/runs/sft1/best --repo AletheiaAING/csw"""
+python -m csw.sft.push --src work/runs/sft1/best   (repository from CSW_MODEL_REPO)"""
 import argparse, os
 from pathlib import Path
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--src", required=True); ap.add_argument("--repo", default="AletheiaAING/csw"); ap.add_argument("--card", default=""); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--src", required=True); ap.add_argument("--repo", default=os.environ.get("CSW_MODEL_REPO")); ap.add_argument("--card", default=""); a = ap.parse_args()
     from huggingface_hub import HfApi
     api = HfApi(token=os.environ["HF_WRITE_TOKEN"]); private = True
     try:

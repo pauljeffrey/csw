@@ -1,4 +1,4 @@
-"""Fresh English for the RL prompts, taken ONLY from the AletheiaAING/*-triage datasets and only the parts the triage model marks as easy to translate.
+"""Fresh English for the RL prompts, taken ONLY from the annotated English source datasets of the organisation named by CSW_ENGLISH_SOURCE_ORG and only the parts the triage model marks as easy to translate.
 
 Run on a GPU/CPU box, low priority:   python -m csw.judging.fetch_english --out english_fresh.jsonl [--exclude-sha1 ours.txt] [--scale 1.0]
 
@@ -29,18 +29,9 @@ TOK = env_value("HF_WRITE_TOKEN")
 CACHE = os.environ.get("CSW_HF_CACHE", "hf_tmp")
 
 # repo, kind, register, max shards, max windows from the source (at --scale 1)
-SOURCES = [
-    ("everyday-conversations-llama3.1-2k-triage", "chat", "chat", 1, 7000),
-    ("ultrachat_200k-triage", "chat", "chat", 6, 18000),
-    ("WildChat-1M-triage", "chat", "chat", 8, 12000),
-    ("oasst_top1_2023-08-25-triage", "chat", "chat", 3, 3500),
-    ("databricks-dolly-15k-triage", "chat", "chat", 3, 5000),
-    ("General-Stories-Collection-triage", "chat", "story", 3, 6000),
-    ("TinyStories-triage", "text", "story", 3, 16000),
-    ("Children-Stories-Collection-triage", "text", "story", 3, 9000),
-    ("cosmopedia.stories-triage", "text", "story", 3, 9000),
-    ("wikipedia.20231101.simple-triage", "text", "simple_wiki", 4, 9000),
-]
+ORG = env_value("CSW_ENGLISH_SOURCE_ORG")
+SUFFIX = env_value("CSW_ENGLISH_SOURCE_SUFFIX", "")
+SOURCES = json.load(open(env_value("CSW_ENGLISH_SOURCES_FILE"), encoding="utf-8")) if env_value("CSW_ENGLISH_SOURCES_FILE") else []    # [[repo, kind, register, max shards, max windows], ...]
 OK_DEPTH = {"plain language, no jargon", "school-level terminology"}
 OK_DIFF = {"very easy", "easy"}
 BANDS = [((1, 3), 0.25), ((2, 5), 0.35), ((6, 12), 0.28), ((13, 20), 0.12)]
@@ -133,11 +124,11 @@ def main():
             if a.only and a.only not in repo:
                 continue
             cap = int(cap * a.scale); got = 0; scanned = 0
-            files = sorted(f for f in api.list_repo_files("AletheiaAING/" + repo, repo_type="dataset") if f.endswith(".parquet"))[:max_shards]
+            files = sorted(f for f in api.list_repo_files(f"{ORG}/{repo}", repo_type="dataset") if f.endswith(".parquet"))[:max_shards]
             for fn in files:
                 if got >= cap:
                     break
-                p = hf_hub_download("AletheiaAING/" + repo, fn, repo_type="dataset", token=TOK, cache_dir=CACHE)
+                p = hf_hub_download(f"{ORG}/{repo}", fn, repo_type="dataset", token=TOK, cache_dir=CACHE)
                 t = pq.read_table(p, columns=["messages", "triage_turns"] if kind == "chat" else ["text", "triage"])
                 for row in t.to_pylist():
                     scanned += 1
@@ -149,7 +140,7 @@ def main():
                             if key in excl or key in seen or head in seen:
                                 continue
                             seen.add(key); seen.add(head)
-                            fo.write(json.dumps({"id": f"{repo.split('-triage')[0]}:{key[:10]}", "english": w, "n_sent": nsent, "source": repo.replace("-triage", ""),
+                            fo.write(json.dumps({"id": f"{repo.removesuffix(SUFFIX)}:{key[:10]}", "english": w, "n_sent": nsent, "source": repo.replace(SUFFIX, ""),
                                                  "register": reg,
                                                  "domain": lab.get("domain"), "difficulty": lab.get("translation_difficulty")}, ensure_ascii=False) + "\n")
                             got += 1; n_out += 1
@@ -159,7 +150,7 @@ def main():
                             break
                     if got >= cap:
                         break
-                shutil.rmtree(os.path.join(CACHE, "datasets--AletheiaAING--" + repo), ignore_errors=True)
+                shutil.rmtree(os.path.join(CACHE, f"datasets--{ORG}--{repo}"), ignore_errors=True)
             stats[repo] = {"scanned_rows": scanned, "windows": got}
             print(repo, stats[repo], flush=True)
     print(json.dumps({"total": n_out, "by_source": stats}))

@@ -1,8 +1,9 @@
-"""Replay candidates from the DECONTAMINATED en->X set (BeardedMonster/sabiyarn-clean-sft-2026-10-28; dev/devtest/test text of 22 benchmarks removed on both sides).
+"""Replay candidates from the DECONTAMINATED en->X set (the repository named by CSW_REPLAY_CLEAN_REPO; dev/devtest/test text of 22 benchmarks removed on both sides).
     python -m csw.sft.build_replay2 --out work/replay2_candidates.jsonl --stats work/replay2_stats.json [--cap 700]
 One pass over data/pairs-*.parquet (each file downloaded, read, deleted). Per (iso, source_dataset) a reservoir sample of at most --cap pairs is kept together with the pair counts, so the
 human-translation allow-list is chosen afterwards from the stats, not guessed. Rows: {iso, english, target, source_dataset, licence, flipped, decon_flag}."""
 from __future__ import annotations
+from csw.paths import env_value
 import argparse, collections, json, os, random
 from pathlib import Path
 
@@ -13,7 +14,7 @@ def tok():
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--out", required=True); ap.add_argument("--stats", required=True); ap.add_argument("--cap", type=int, default=700)
-    ap.add_argument("--repo", default="BeardedMonster/sabiyarn-clean-sft-2026-10-28"); a = ap.parse_args()
+    ap.add_argument("--repo", default=env_value("CSW_REPLAY_CLEAN_REPO")); a = ap.parse_args()
     from huggingface_hub import HfApi, hf_hub_download
     import pyarrow.parquet as pq
     api = HfApi(token=tok()); rnd = random.Random(7)

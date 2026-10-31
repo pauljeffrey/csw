@@ -2,13 +2,14 @@
 python -m csw.sft.make_base --out work/base
 Tokenizer slots named <unusedN> (6,242 of them in the Gemma-3 vocabulary) are renamed to <hm> <ood> <dev> </dev> and the language tags (<yor> <eng> ...); nothing is added, the vocabulary stays 262,144.
 Each renamed row of the (tied) embedding matrix starts as the mean of the embeddings of the pieces the same string had before, so training does not start from noise."""
+from csw.paths import env_value
 import argparse, json, os, sys
 from pathlib import Path
 from csw.sft import fmt2
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--out", required=True); ap.add_argument("--repo", default="BeardedMonster/gemma-3-270m-translate-rl2c"); ap.add_argument("--subdir", default="latest", help="folder inside the repo that holds the model ( '' for a plain model repo such as google/gemma-3-270m)"); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--out", required=True); ap.add_argument("--repo", default=env_value("CSW_BASE_MODEL")); ap.add_argument("--subdir", default="latest", help="folder inside the repo that holds the model ( '' for a plain model repo such as google/gemma-3-270m)"); a = ap.parse_args()
     import torch
     from huggingface_hub import snapshot_download
     from transformers import AutoModelForCausalLM, AutoTokenizer

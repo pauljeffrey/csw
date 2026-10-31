@@ -1,5 +1,6 @@
 """Write DATASET_CARD.md (Hugging Face README) with live numbers.   python -m csw.datagen.make_card"""
 from csw.paths import DATA_ROOT
+from csw.paths import env_value
 import json, sys, statistics as st, collections as C
 from pathlib import Path
 HERE = DATA_ROOT
@@ -8,15 +9,16 @@ an = json.loads((HERE / "final" / "analytics.json").read_text()); vers = json.lo
 tier = lambda l: "high" if l in HIGH else "mid" if l in MID3K + MID2K else "low" if l in LOW else "very low (1-3 sentences)" if l in VERY_LOW else "Pidgin (12k, last)" if l == "pcm" else "?"
 rows = "\n".join(f"| {l} | {P[l].name} | {tier(l)} | {', '.join(P[l].switch)} | {TARGETS[l]:,} | {GOLD_N.get(l, 0)} | {an.get(l, {}).get('generated', 0)} |" for l in TARGETS)
 ver = "\n".join(f"| {v['version']} | `{k}` | {v.get('note', '')} |" for k, v in vers.items())
+NAME = env_value("CSW_DATASET_NAME", "csw-code-switch")
 card = f"""---
-pretty_name: African-Code-Switch
+pretty_name: {NAME}
 license: other
 private: true
 language: [{', '.join(sorted(TARGETS))}]
 task_categories: [translation, text-generation]
 tags: [code-switching, african-languages, synthetic, human-corrected]
 ---
-# African-Code-Switch (private, work in progress)
+# {NAME} (private, work in progress)
 
 For {len(TARGETS)} African languages (and three Pidgins), each row holds one situation written four ways:
 

@@ -1,5 +1,5 @@
 """Stage and push every training / label / test file of the csw + evaluator work to the private dataset repo.
-python -m csw.evaluator.push_dataset --repo AletheiaAING/African-Code-Switch --stage work/hub_stage [--no-push]"""
+python -m csw.evaluator.push_dataset --repo $CSW_DATASET_REPO --stage work/hub_stage [--no-push]"""
 from csw.paths import env_value
 import argparse, os, shutil
 from pathlib import Path
@@ -19,7 +19,7 @@ TRAIN["test/csw_sft/test_confirmed_roots.json"] = W / "test_confirmed_roots.json
 TRAIN["test/gold_299/pilot_labels.json"] = W / "pilot_labels.json"
 LABEL_DIRS = ["stage2_both", "label_nb", "chains_tr", "chains_tr_rules", "chains_hm", "chains_ood", "replay_flash", "label_more", "regrade_argon", "regrade_flash_strict"]
 KEEP = ("labels.jsonl", "labels_old.jsonl", "pairs.jsonl", "records.jsonl", "meta.json", "estimate.json", "analysis.txt")
-README = """# African-Code-Switch (private working copy)
+README = """# csw working copy
 
 Training data, judge labels, corrections and gold test sets for the csw code-switch / idiom model and its evaluator (mmBERT-base, 27 graded outputs).
 Not included: the human-rated SSA-MTE / AfriMTE rows (CC-BY-SA-4.0 / CC-BY-4.0, McGill-NLP/SSA-MTE and masakhane/AfriMTE-WMT2024). The evaluator's human-rating training and dev rows

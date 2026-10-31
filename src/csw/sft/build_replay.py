@@ -1,10 +1,11 @@
 """Candidate eng->m replay pairs from HUMAN-translated data, run on the box (streams the Hub files one by one, never keeps them).
     python -m csw.sft.build_replay --out work/replay_candidates.jsonl --stats work/replay_stats.json
-Sources:  (1) BeardedMonster/sft-all  sft_new_existing  task=translation, source_lang=eng  (origin in metadata; the origin is kept so it can be allow-listed afterwards),
+Sources:  (1) the merged translation SFT shards (CSW_REPLAY_SFT_REPO), part sft_new_existing  task=translation, source_lang=eng  (origin in metadata; the origin is kept so it can be allow-listed afterwards),
           (2) AfriScience-MT dev references (Apache-2.0, professional),  (3) weak-language-parallel train_ready/permissive (CC0 / CC-BY; synthetic English side excluded).
 Never used: NLLB / TranslatePsy / nllb_mined pairs, FineTranslations (English side is machine-generated), the benchmarks' test and devtest splits, noncommercial files.
 Each row: {lang, eng, m, source, origin, licence}."""
 from __future__ import annotations
+from csw.paths import require_env
 import argparse, collections, json, os, re
 from pathlib import Path
 
@@ -29,7 +30,7 @@ def main():
         if len(eng) < 5 or len(m) < 3 or len(eng) > 1500: return
         out.write(json.dumps({"lang": lang, "eng": eng, "m": m, "source": source, "origin": origin, "licence": lic}, ensure_ascii=False) + "\n"); st[f"{source}|{origin}|{lang}"] += 1
 
-    rid = "BeardedMonster/sft-all"
+    rid = require_env("CSW_REPLAY_SFT_REPO", "dataset repository with the merged translation SFT shards")
     for f in sorted(x for x in api.list_repo_files(rid, repo_type="dataset") if "sft_new_existing" in x and x.endswith(".parquet")):
         p = hf_hub_download(rid, f, repo_type="dataset", token=tok())
         for r in pq.read_table(p, columns=["task", "source_lang", "targ_lang", "input", "response", "metadata"]).to_pylist():
@@ -37,12 +38,12 @@ def main():
             try: md = json.loads(r["metadata"]) if isinstance(r["metadata"], str) else (r["metadata"] or {})
             except Exception: md = {}
             if md.get("unsure_src") or md.get("unsure_tgt"): continue
-            emit(r["targ_lang"], r["input"], r["response"], "sft-all", md.get("origin") or md.get("source") or "?", md.get("licence") or "?")
+            emit(r["targ_lang"], r["input"], r["response"], "sft_merged", md.get("origin") or md.get("source") or "?", md.get("licence") or "?")
         os.remove(p)
-    rid = "BeardedMonster/SabiYarn-MT-benchmark-translations"
+    rid = require_env("CSW_REPLAY_BENCH_REPO", "dataset repository with the benchmark development translations")
     p = hf_hub_download(rid, "eval_benchmarks/afriscience_mt_dev_text.parquet", repo_type="dataset", token=tok())
     for r in pq.read_table(p).to_pylist(): emit(r["language"], r["source_en"], r["reference"], "afriscience_mt_dev", "dsfsi/afriscience_mt", "Apache-2.0")
-    rid = "BeardedMonster/sabiyarn-weak-language-parallel-2026-10-26"
+    rid = require_env("CSW_REPLAY_WEAK_REPO", "dataset repository with the permissive weak-language parallel data")
     for f in sorted(x for x in api.list_repo_files(rid, repo_type="dataset") if x.startswith("train_ready/permissive/")):
         p = hf_hub_download(rid, f, repo_type="dataset", token=tok())
         for l in open(p, encoding="utf-8"):

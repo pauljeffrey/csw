@@ -21,7 +21,7 @@ for r in rows:
     s = [v for v in ((r.get("judge") or {}).get("scores") or {}).values() if isinstance(v, (int, float))]
     if s: byl[r['lang']].append(sum(s) / len(s))
 print("per-language judge mean:", {k: round(st.mean(v), 2) for k, v in sorted(byl.items(), key=lambda x: -st.mean(x[1]))})
-md = ["# African-Code-Switch - v3 sample (Gemma-4-31B, 3 rows per language)\n", "Fields: `eng` plain official English - `m_text` official translation - `hm` natural code-switched variation - `ood` full informal native parlance. Judge = DeepSeek-V4-Pro (not a native speaker). Rows shown BEFORE judge corrections unless marked.\n"]
+md = ["# Code-switch corpus - v3 sample (Gemma-4-31B, 3 rows per language)\n", "Fields: `eng` plain official English - `m_text` official translation - `hm` natural code-switched variation - `ood` full informal native parlance. Judge = DeepSeek-V4-Pro (not a native speaker). Rows shown BEFORE judge corrections unless marked.\n"]
 for lang in sorted({r['lang'] for r in rows}):
     md.append(f"\n## {lang}\n")
     for r in [x for x in rows if x['lang'] == lang]:

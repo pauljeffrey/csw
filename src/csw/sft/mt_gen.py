@@ -1,4 +1,4 @@
-"""Translations of English sentences by the translator model (BeardedMonster/gemma-3-270m-translate-rl2c) for the evaluator's natural-low-quality data.
+"""Translations of English sentences by the translator model (the model named by CSW_BASE_MODEL) for the evaluator's natural-low-quality data.
 python -m csw.sft.mt_gen --model work/translator --src r4/mt_src.jsonl --out r4/mt_out.jsonl --mode greedy|sample [--bs 96] [--max-new 160]
 Prompt = the translation replay format: 'Translate the text to <Language>:  <english>' in the chat wrapper; the completion starts with the ISO code, which is removed."""
 import argparse, json, sys, time
