@@ -1,48 +1,46 @@
-# csw: reinforcement learning for African-language code-switching and idiom generation
+# csw
 
-> **Weights and data are available to reviewers on request.**
+*Weights and data are available to reviewers on request.*
 
-This repository accompanies a research study on generating human-style code-switched text and idiom-rich text in 37 African languages, and on what happens when reinforcement learning (GRPO) is driven by a learned reference-free evaluator. It contains the research write-up, a results-only package and the model cards of the two models studied. The code that produced the results is in `src/csw/` (stages and module map: `docs/ARCHITECTURE.md`, design rationale: `docs/DESIGN_DECISIONS.md`, configuration: `docs/CONFIGURATION.md` and `.env.example`). No data or weights are stored here, and the repository contains no usage instructions.
+I wanted to see whether reinforcement learning could make a small model better at writing the way people in Africa actually write: mixing languages mid-sentence, and using idioms that don't translate word for word. This repository is the record of that attempt, including the parts that didn't work.
 
-- **Paper (PDF):** [`paper/paper.pdf`](paper/paper.pdf) (source: [`paper/paper.md`](paper/paper.md))
-- **Results package:** [`results/`](results/) (tables, figures, logs, evaluation outputs)
+The model is a 301M-parameter decoder built on Gemma-3-270M. It covers 37 African languages and six tasks: translation from English, code-switching (from English or from a single-language text), and idiom writing (from English, from a single-language text, or from a code-switched text). I first trained it with supervised fine-tuning, then with GRPO, using a learned evaluator and a set of hand-written rules as the reward.
 
-## Main findings
+The short version of what happened: the reward went up and the text did not get better.
 
-1. **A learned reward alone was exploited.** With the evaluator plus a small rule set as the reward, the proxy reward rose from 0.37 to 0.61 over 540 RL steps while an independent reference metric (chrF++ on the SFT test set) fell from 50.05 to 43.29 (English-to-code-switch) and from 55.58 to 48.35 (monolingual-to-code-switch), with English leaking into the outputs. The idiom tasks were flat or slightly up.
-2. **The evaluator cannot see the failure.** Against 20,204 human-rated English-to-X segments its Spearman correlation is 0.25 (SSA-COMET-QE 0.49, AfriCOMET-QE 0.35), and it does not penalise hallucinated additions.
-3. **A rule-anchored reward limits the degradation.** With language-identification, function-word, diacritic, name, number, length, repetition and device-use rules, a reference-free translation metric, fresh prompts that never occur in the SFT data and a held-out chrF++ monitor, the final policy changes chrF++ on the full test set (6,230 items, 34 languages) by +0.8 to +1.3 on the three idiom tasks and by -0.7 and -1.0 on the two code-switching tasks; format validity rises from about 95% to 99.8%; the mean reward rises from 0.14-0.53 to 0.28-0.74.
-4. **Only about a quarter of the reward gain comes from the evaluator.** Splitting the gain: evaluator +0.054 (about 25%), rule penalties +0.168 (about 74%), format gate +0.007. On the code-switching tasks the evaluator accounts for 10-13% of the gain.
-5. **Judged quality is slightly lower after RL.** Gemini 3.8 Flash graded the full test set (6,225 items) for the SFT model, RL best, RL latest and the data-generation model's own text with a standard system-blind rubric (24,898 graded outputs): RL latest is lower than SFT by 0.09 on a 1-5 scale (95% CI [-0.10, -0.07]), significantly lower on every task (most on monolingual-to-code-switch, -0.19) and for 18 of 34 languages (Nigerian Pidgin -0.54), and both models are 1.4 points below the generator's text. A Gemini 4 Argon cross-check on 1,000 items agrees in direction (Spearman 0.82 with Flash on the overall criterion). The old label prompt, which shows the judge our rule measurements, scores RL higher than the standard prompt does. Stratified 1,000-item samples were too small to detect the decline.
-6. **Decoding.** Sampling (temperature 0.7, top-p 0.95) lowers per-sample chrF++ on code-switching and leaves it unchanged on idioms; picking the best of eight with the evaluator raises the evaluator score but not chrF++ (the oracle pick is 3-4 points above greedy, so a better selector, not more sampling, is the missing piece).
-7. **Negative result on interpretability.** Six per-group special tokens added to the evaluator did not specialise (near-identical attention and hidden states).
-8. **SFT ablations.** Starting from a translation-tuned model beats starting from the plain base model; adding 6 interleaved layers beats adding 12 but does not beat the 18-layer baseline at 20% data; glossed devices hurt; an English draft helps only English-to-idiom (within the noise floor).
+- The paper is in [`paper/paper.pdf`](paper/paper.pdf) (source in [`paper/paper.md`](paper/paper.md)).
+- The tables, logs and figures behind every number are in [`results/`](results/).
+- The code that produced them is in [`src/csw/`](src/csw/). [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) explains how the stages fit together, [`docs/DESIGN_DECISIONS.md`](docs/DESIGN_DECISIONS.md) explains why, and [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) lists what is read from the environment (see `.env.example`).
 
-## Model card: generator (SFT, then RL)
+This repository holds no data or weights, and no instructions for running the model.
 
-| | |
-|---|---|
-| Architecture | Gemma-3-270M-based decoder, translation-tuned, 6 interleaved identity-initialised layers added (24 layers, 301M parameters), tags added to the vocabulary |
-| Tasks | six: English-to-language translation replay; English or monolingual text to code-switched text; English, monolingual or code-switched text to idiom-rich text; 37 languages |
-| SFT data | 832,421 training rows generated by a 31B instruction model, filtered by rules and two LLM judges on about 22% of rows, with judge-corrected copies; 17,399 validation and 6,230 curated test rows (no English source shared with train) |
-| RL | GRPO, group of 8 (7 sampled plus the greedy decode), 32 prompts per step, AdamW 2e-6, k3 KL to the SFT model with an adaptive coefficient; a fresh prompt pool of 46,145 prompts with zero overlap with the SFT sources |
-| Reward | evaluator mean (equal weights) minus weighted rule penalties, floored at -1; AfriCOMET-QE term for English-to-language in 14 covered languages; full rule table in the paper |
-| Evaluation | chrF++ of the final text against curated references on the full test set; held-out reference monitor; evaluator and rule scores; a full-test comparison with an LLM judge (Gemini 3.8 Flash) and an Argon cross-check; best-of-8 with the evaluator as selector; see `results/` |
-| Not used | SSA-MTE and AfriMTE (benchmarks only), NLLB-produced rows, TranslatePsy |
-| Known limitations | single seed per configuration; LLM-judge labels, no human ratings of code-switching quality; the switch-share rule penalises 29-36% of human references; language ID is unreliable on short mixed spans; diacritic and number-word tables incomplete; the switch-language table is human-supplied and may include pairs a native speaker finds unnatural |
+## What I found
 
-## Model card: evaluator
+**A learned reward on its own gets gamed.** In my first runs the reward was mostly the evaluator, plus a few rules. Over 540 steps the reward rose from 0.37 to 0.61, while chrF++ against the reference texts fell from 50.05 to 43.29 on English-to-code-switch and from 55.58 to 48.35 on monolingual-to-code-switch. English words were leaking into the output, and the evaluator didn't mind.
 
-| | |
-|---|---|
-| Architecture | mmBERT-base, 256,006-token vocabulary with six appended group tokens, six MLP heads, 27 outputs on a 1-5 scale (translation M1-M6, code-switching H1-H9 and D1, idioms O1-O7 and D2, X1, overall PD and IQ) |
-| Training | one run, masked Huber loss, optimizer state kept, early stopping (best validation Spearman 0.683 at step 22,500) |
-| Data | 167k records from the project's generated data, labelled by LLM judges (mainly Gemini 3.8 Flash) under standard and strict prompts, plus synthetic negatives and graded corruption chains; no human ratings, no SSA-MTE or AfriMTE |
-| Agreement with judges | beats the previous fine-tune on every task against Flash (+0.008 to +0.017, CIs above zero) and luna; Spearman with Argon on 299 gold rows 0.69 (code-switching) and 0.71 (idioms) |
-| Structure | better-above-bad probability 0.80 on 534 held-out pairs; corruption-chain ordering 84% (translation), 89% (code-switching), 85% (idioms) |
-| Against humans | pooled Spearman 0.25 on 20,204 segments, below SSA-COMET-QE (0.49) and AfriCOMET-QE (0.35): not a judge of translation quality |
-| Internals | group tokens do not specialise; the evaluator ignores the devices block; scrambling the target lowers all outputs by 1.7-2.4 points |
-| Licence note | labels come from commercial LLM judges: research use only |
+**The evaluator is weaker than its numbers suggested.** It matches the Gemini judges that labelled its training data fairly well (Spearman 0.69 to 0.85 depending on the task). Against 20,204 human-rated translations it reaches 0.25, where SSA-COMET-QE gets 0.49 and AfriCOMET-QE 0.35. When I later checked it where it matters for GRPO, ranking the outputs for one prompt against each other, it agreed with Flash only 54% of the time. Raising its score by 0.2 points should have bought about 0.02 points of judged quality. The judged score fell instead.
 
-## Citation
+**Rules did most of the work.** For the final runs I added checks for language identification, function words, diacritics, names, numbers, length, repetition and device use, a reference-free translation score for English-to-language prompts, a fresh prompt pool that shares nothing with the SFT data, and a held-out chrF++ check applied per task. Splitting up the reward gain, about 74% came from the rules and about 26% from the evaluator.
+
+**The final model is mixed.** On the full test set (6,230 items, 34 languages, greedy decoding), chrF++ improves by 0.8 to 1.3 on the three idiom tasks and drops by 0.7 and 1.0 on the two code-switching tasks. Valid output format goes from about 95% to 99.8%.
+
+**An independent judge is less kind.** Gemini 3.8 Flash graded all 24,898 outputs from the SFT model, two RL checkpoints and the text the training data was generated from, using a rubric that doesn't say which system wrote what. RL comes out 0.09 points below SFT on a 1 to 5 scale (95% interval -0.10 to -0.07). Every task is lower, with monolingual-to-code-switch worst at -0.19, and 18 of 34 languages decline, Nigerian Pidgin most (-0.54). Both models sit about 1.4 points below the generator's own text. A Gemini 4 Argon check on 1,000 items points the same way, though a sample that small can't confirm the size of the drop. I only saw the decline once the full set was graded: two earlier 1,000-item samples showed nothing.
+
+**A few smaller results.**
+- Picking the best of eight samples with the evaluator raises the evaluator score but not chrF++. The best possible pick is 3 to 4 points above greedy, so the missing piece is a better selector, not more samples.
+- Six extra "group" tokens I added to the evaluator did not specialise. Their attention and hidden states ended up nearly identical.
+- In the SFT ablations, starting from a translation-tuned model beat the plain base model, and glossed devices hurt. Adding 6 interleaved layers beat adding 12, but neither beat the 18-layer baseline when trained on 20% of the data. An English draft helped only the English-to-idiom task, within the noise.
+
+## What I could not do
+
+One seed per configuration. The supervision comes from LLM judges, with no human ratings of code-switching quality. A blind candidate pool for a human preference study exists, but I haven't run it. The switch-share rule penalises 29 to 36% of the human references, language ID is unreliable on short mixed spans, and the number-word and diacritic tables are incomplete. The list of allowed switch languages for each base language was supplied by a person, and a native speaker may find some pairs unnatural. I also didn't test a lower evaluator weight, or preference-based training on judge-picked pairs; the numbers suggest both are worth trying.
+
+## The two models
+
+The generator is Gemma-3-270M, translation-tuned, with 6 identity-initialised layers interleaved (24 layers in total) and the task tags added to the vocabulary. The SFT data is 832,421 rows written by a 31B instruction model, filtered by rules and by two LLM judges on about 22% of rows. Validation has 17,399 rows and the curated test set 6,230, with no English source shared with training. For RL I used GRPO with groups of 8 (seven sampled, one greedy), 32 prompts per step, AdamW at 2e-6 and a KL penalty to the SFT model with an adaptive coefficient, on 46,145 fresh prompts. The reward is the evaluator mean minus weighted rule penalties, floored at -1, plus an AfriCOMET-QE term for English-to-language prompts in the 14 languages it covers. I did not use SSA-MTE, AfriMTE, NLLB output or TranslatePsy for training.
+
+The evaluator is mmBERT-base with six group tokens added to its 256,006-token vocabulary and six small heads giving 27 scores from 1 to 5. It was trained once on 167k records from this project's data, labelled mostly by Gemini 3.8 Flash, plus synthetic negatives and graded corruption chains. Best validation Spearman was 0.683. It ranks a better text above a worse one 80% of the time on 534 held-out pairs, and puts corruption chains in the right order 84 to 89% of the time. It ignores the devices block, and scrambling the target lowers its scores by 1.7 to 2.4 points. Because the labels come from commercial LLM judges, it is for research use only.
+
+## Citing
+
 Citation details will be added with the final version of the paper.

@@ -4,7 +4,7 @@ Results only: tables, figures and logs behind the paper (`../paper/paper.pdf`). 
 
 | folder | contents |
 |---|---|
-| `evaluator/` | agreement of the final evaluator with the LLM judges (`cmp_std.*`, `cmp_strict.*`), gold-row comparison (`pilot.txt`), low-end and corruption-chain checks (`lowend.txt`, `chains.txt`), comparison with SSA-COMET and AfriCOMET on 20,204 human-rated segments (`ssa_full_comparison_*.md`, `regression_final.json`), and the internals analysis (`internals/`) |
+| `evaluator/` | `within_prompt.md` (does the evaluator rank the outputs of one prompt like Flash does), agreement of the final evaluator with the LLM judges (`cmp_std.*`, `cmp_strict.*`), gold-row comparison (`pilot.txt`), low-end and corruption-chain checks (`lowend.txt`, `chains.txt`), comparison with SSA-COMET and AfriCOMET on 20,204 human-rated segments (`ssa_full_comparison_*.md`, `regression_final.json`), and the internals analysis (`internals/`) |
 | `sft_ablations/` | the SFT ablation report (start model, depth, glossed devices, English draft) with its raw result files |
 | `judges/` | LLM-judge validation against human ratings, with costs |
 | `rl/logs/` | per-step training logs and periodic monitor logs of the RL runs (run 1-2: evaluator-led reward; runs 4-7: rule-anchored reward; runs 6-7 are split into resumed segments); `rl/sft_test_chrf/` the SFT-test chrF++ of the SFT model and of RL run 2 |
