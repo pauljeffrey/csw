@@ -13,6 +13,7 @@ Results only: tables, figures and logs behind the paper (`../paper/paper.pdf`). 
 | `judge_flash_v2_full/` | Gemini 3.8 Flash grades of the full test set for four systems with the standard prompt (analysis tables per task, criterion and language, scores, diffs) |
 | `judge_argon_v2/` | Gemini 4 Argon cross-check on 1,000 stratified items (same prompt) |
 | `judge_flash_v2/` | the earlier stratified Flash run, the judge prompt and the old strict prompt on a 300-item subset |
+| `gguf_q8/` | 8-bit GGUF check: chrF++ of the Q8 file against fp32, bf16 and f16 for both models, and the converter fix needed for this architecture |
 | `figures/` | the paper's figures (1-11) |
 
 Notes
