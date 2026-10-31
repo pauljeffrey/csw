@@ -1,0 +1,5 @@
+common rows 2688 (arms: F, E2)
+arm  params   score   eng_hm  eng_ood   hm_ood     m_hm    m_ood  loop% noclose% fmt_ok   len   gap-to-best CI95
+F       335   37.70    43.91    29.95    29.70    52.08    32.84    2.9      0.1  0.991  1.12   [+0.57, +1.17]
+E2      301   38.57    45.57    30.96    30.32    52.93    33.09    3.0      0.1  0.986  1.18   [+0.00, +0.00]
+best E2; tied with best: ['E2']; WINNER (smallest tied) = E2
