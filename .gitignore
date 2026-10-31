@@ -48,3 +48,6 @@ dist/
 # published research material (results package and paper) is tracked
 !/results/**
 !/paper/**
+
+# the example environment file is tracked
+!.env.example

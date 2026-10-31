@@ -2,7 +2,7 @@
 
 > **Weights and data are available to reviewers on request.**
 
-This repository accompanies a research study on generating human-style code-switched text and idiom-rich text in 37 African languages, and on what happens when reinforcement learning (GRPO) is driven by a learned reference-free evaluator. It contains the research write-up, a results-only package and the model cards of the two models studied. It does not contain usage instructions.
+This repository accompanies a research study on generating human-style code-switched text and idiom-rich text in 37 African languages, and on what happens when reinforcement learning (GRPO) is driven by a learned reference-free evaluator. It contains the research write-up, a results-only package and the model cards of the two models studied. The code that produced the results is in `src/csw/` (stages and module map: `docs/ARCHITECTURE.md`, design rationale: `docs/DESIGN_DECISIONS.md`, configuration: `docs/CONFIGURATION.md` and `.env.example`). No data or weights are stored here, and the repository contains no usage instructions.
 
 - **Paper (PDF):** [`paper/paper.pdf`](paper/paper.pdf) (source: [`paper/paper.md`](paper/paper.md))
 - **Results package:** [`results/`](results/) (tables, figures, logs, evaluation outputs)
