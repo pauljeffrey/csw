@@ -25,7 +25,6 @@ dist/
 /final/
 /old_generated/
 /retired/
-/paper/
 /out*/
 /oai*/
 /runs/
@@ -45,3 +44,7 @@ dist/
 
 # the small configuration tables shipped with the code
 !src/csw/rl/data/*.json
+
+# published research material (results package and paper) is tracked
+!/results/**
+!/paper/**
