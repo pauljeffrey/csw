@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csw"
+version = "0.1.0"
+description = "Code-switching and idiom generation for 37 African languages: data generation, LLM-judge scoring, SFT, a learned evaluator and GRPO."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+# one extra per stage; "all" installs everything except the GPU-only extras
+datagen = ["openai", "python-dotenv", "datasets", "tokenizers", "transformers", "huggingface_hub", "pyarrow"]
+judging = ["google-genai", "openai", "requests", "jsonschema", "huggingface_hub", "pyarrow", "python-dotenv"]
+sft = ["torch", "transformers", "huggingface_hub", "pyarrow", "sacrebleu", "tokenizers"]
+sft-gen = ["vllm"]
+evaluator = ["torch", "transformers", "scipy", "huggingface_hub"]
+comet = ["unbabel-comet", "huggingface_hub"]
+rl = ["torch", "transformers", "sacrebleu", "huggingface_hub", "fasttext-wheel"]
+rl-gen = ["vllm"]
+dev = ["pytest", "ruff"]
+all = ["csw[datagen,judging,sft,evaluator,rl,dev]"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"csw.rl" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 200
+target-version = "py310"
+extend-exclude = ["src/csw/vendor"]
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
+# The pipeline modules are written as compact scripts (several statements per line, scripts that run at import time);
+# only real errors (syntax, undefined names) are enforced.

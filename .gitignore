@@ -1,0 +1,47 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+build/
+dist/
+
+# secrets and local configuration
+.env
+.env.*
+*.pem
+*.key
+
+# data, outputs and artefacts are never versioned here
+/work/
+/seeds/
+/anchors/
+/exemplars/
+/culture_pool/
+/culture_seeds/
+/prompts_out/
+/final/
+/old_generated/
+/retired/
+/paper/
+/out*/
+/oai*/
+/runs/
+*.jsonl
+*.jsonl.gz
+*.parquet
+*.npz
+*.npy
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+*.gguf
+*.log
+*.zip
+
+# the small configuration tables shipped with the code
+!src/csw/rl/data/*.json
