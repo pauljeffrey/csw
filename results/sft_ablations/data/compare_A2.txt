@@ -1,0 +1,7 @@
+arms ['A2', 'E2', 'F'] common rows 2688 {'A2': 2688, 'E2': 2688, 'F': 2688}
+common rows 2688 (arms: A2, E2, F)
+arm  params   score   eng_hm  eng_ood   hm_ood     m_hm    m_ood  loop% noclose% fmt_ok   len   gap-to-best CI95
+A2      268   38.72    45.77    31.22    30.48    52.87    33.24    2.2      0.1  0.991  1.09   [+0.00, +0.00]
+E2      301   38.57    45.57    30.96    30.32    52.93    33.09    3.0      0.1  0.986  1.18   [-0.16, +0.45]
+F       335   37.70    43.91    29.95    29.70    52.08    32.84    2.9      0.1  0.991  1.12   [+0.72, +1.31]
+best A2; tied with best: ['A2', 'E2']; WINNER (smallest tied) = A2

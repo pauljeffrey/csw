@@ -1,0 +1,16 @@
+{
+ "frac": 0.2,
+ "train": 166484,
+ "val": 3488,
+ "test": 6230,
+ "stats": {
+  "A_no_row": 119,
+  "B_glossed": 108804,
+  "B_no_gloss": 139,
+  "B_no_row": 119,
+  "C_off": 52529,
+  "C_on": 56414,
+  "C_no_row": 119
+ },
+ "ood_train": 103048
+}
