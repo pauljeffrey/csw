@@ -1,0 +1,266 @@
+{
+ "sft": {
+  "eng_ood": {
+   "greedy": {
+    "chrf_corpus": 38.70019395450182,
+    "evaluator": 3.866940680372425,
+    "fmt_fail": 0.0007363770250368162,
+    "n": 1358
+   },
+   "random_sample": {
+    "chrf_corpus": 38.90747847781108,
+    "evaluator": 4.009481287143016,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 39.07413220182926,
+    "evaluator": 4.259241824121995,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 42.73761147278891,
+    "evaluator": 4.018266247193136,
+    "fmt_fail": 0.0,
+    "n": 1358
+   }
+  },
+  "m_hm": {
+   "greedy": {
+    "chrf_corpus": 61.92570017227984,
+    "evaluator": 3.044901963377529,
+    "fmt_fail": 0.016820857863751093,
+    "n": 1189
+   },
+   "random_sample": {
+    "chrf_corpus": 59.966315407310475,
+    "evaluator": 3.0333183656816614,
+    "fmt_fail": 0.01766190075693863,
+    "n": 1189
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 60.16783732488099,
+    "evaluator": 3.1599151221188633,
+    "fmt_fail": 0.000841042893187538,
+    "n": 1189
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 65.81724175618255,
+    "evaluator": 3.035838247549654,
+    "fmt_fail": 0.000841042893187538,
+    "n": 1189
+   }
+  },
+  "m_ood": {
+   "greedy": {
+    "chrf_corpus": 40.888784708913484,
+    "evaluator": 3.8930096709737025,
+    "fmt_fail": 0.0007363770250368162,
+    "n": 1358
+   },
+   "random_sample": {
+    "chrf_corpus": 40.76793740059183,
+    "evaluator": 3.9861304035769645,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 40.938233855065995,
+    "evaluator": 4.246832432206144,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 44.670982369494716,
+    "evaluator": 4.014406598369222,
+    "fmt_fail": 0.0,
+    "n": 1358
+   }
+  },
+  "hm_ood": {
+   "greedy": {
+    "chrf_corpus": 39.6523001330639,
+    "evaluator": 3.7148471499416913,
+    "fmt_fail": 0.0,
+    "n": 1131
+   },
+   "random_sample": {
+    "chrf_corpus": 39.88665648633723,
+    "evaluator": 3.8900390185086073,
+    "fmt_fail": 0.0008841732979664174,
+    "n": 1131
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 39.9711402548584,
+    "evaluator": 4.148511066993288,
+    "fmt_fail": 0.0,
+    "n": 1131
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 43.58894897919546,
+    "evaluator": 3.905938981382537,
+    "fmt_fail": 0.0,
+    "n": 1131
+   }
+  },
+  "eng_hm": {
+   "greedy": {
+    "chrf_corpus": 55.14308949092121,
+    "evaluator": 3.0134691592449796,
+    "fmt_fail": 0.020185029436501245,
+    "n": 1189
+   },
+   "random_sample": {
+    "chrf_corpus": 52.4719165564593,
+    "evaluator": 2.9999433696474815,
+    "fmt_fail": 0.021026072329688783,
+    "n": 1189
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 52.78241867864638,
+    "evaluator": 3.1319888088773573,
+    "fmt_fail": 0.003364171572750263,
+    "n": 1189
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 58.4858873263305,
+    "evaluator": 3.008711046508596,
+    "fmt_fail": 0.003364171572750263,
+    "n": 1189
+   }
+  }
+ },
+ "rl_last": {
+  "eng_ood": {
+   "greedy": {
+    "chrf_corpus": 38.60066763562627,
+    "evaluator": 4.172567079801096,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "random_sample": {
+    "chrf_corpus": 37.88726851970682,
+    "evaluator": 4.20328162661006,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 37.81981608207301,
+    "evaluator": 4.346450432235257,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 41.567169470348816,
+    "evaluator": 4.196488402026742,
+    "fmt_fail": 0.0,
+    "n": 1358
+   }
+  },
+  "m_hm": {
+   "greedy": {
+    "chrf_corpus": 61.213251595523154,
+    "evaluator": 3.09914109261349,
+    "fmt_fail": 0.000841042893187538,
+    "n": 1189
+   },
+   "random_sample": {
+    "chrf_corpus": 60.17015635101575,
+    "evaluator": 3.0951400522839965,
+    "fmt_fail": 0.002523128679562614,
+    "n": 1189
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 59.784229951296744,
+    "evaluator": 3.225856839758293,
+    "fmt_fail": 0.0,
+    "n": 1189
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 64.88761967202318,
+    "evaluator": 3.0983687556020545,
+    "fmt_fail": 0.0,
+    "n": 1189
+   }
+  },
+  "m_ood": {
+   "greedy": {
+    "chrf_corpus": 41.367912229485874,
+    "evaluator": 4.164776586292419,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "random_sample": {
+    "chrf_corpus": 40.480826022130444,
+    "evaluator": 4.198667404051206,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 40.478030571844776,
+    "evaluator": 4.325767443176573,
+    "fmt_fail": 0.0,
+    "n": 1358
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 44.08668731180834,
+    "evaluator": 4.192825718726606,
+    "fmt_fail": 0.0,
+    "n": 1358
+   }
+  },
+  "hm_ood": {
+   "greedy": {
+    "chrf_corpus": 40.10791105582839,
+    "evaluator": 4.054149824154261,
+    "fmt_fail": 0.0,
+    "n": 1131
+   },
+   "random_sample": {
+    "chrf_corpus": 39.29601655523358,
+    "evaluator": 4.101224717790315,
+    "fmt_fail": 0.0,
+    "n": 1131
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 39.27672376172887,
+    "evaluator": 4.244011455884979,
+    "fmt_fail": 0.0,
+    "n": 1131
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 42.81032318828596,
+    "evaluator": 4.090333931220516,
+    "fmt_fail": 0.0,
+    "n": 1131
+   }
+  },
+  "eng_hm": {
+   "greedy": {
+    "chrf_corpus": 54.53862538089358,
+    "evaluator": 3.044758290882352,
+    "fmt_fail": 0.003364171572750263,
+    "n": 1189
+   },
+   "random_sample": {
+    "chrf_corpus": 52.76968466010565,
+    "evaluator": 3.039009663749103,
+    "fmt_fail": 0.002523128679562614,
+    "n": 1189
+   },
+   "evaluator_pick": {
+    "chrf_corpus": 52.80371044476957,
+    "evaluator": 3.163055110258687,
+    "fmt_fail": 0.000841042893187538,
+    "n": 1189
+   },
+   "oracle_chrf": {
+    "chrf_corpus": 57.824494639380205,
+    "evaluator": 3.0437762512502444,
+    "fmt_fail": 0.000841042893187538,
+    "n": 1189
+   }
+  }
+ }
+}

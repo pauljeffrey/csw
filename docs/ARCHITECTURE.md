@@ -297,3 +297,14 @@ API credentials are read from the environment only: `OPENROUTER_API_KEY`, `OPENA
 * Layout: `src/csw/{datagen,judging,sft,evaluator,rl,vendor}`, `scripts/` (shell drivers for generation rounds and the serving wrapper), `tests/`, `docs/`.
 * Optional dependency groups per stage are declared in `pyproject.toml`; the GPU-only groups (`sft-gen`, `rl-gen`) pull in vLLM.
 * The tests that need a GPU, a network connection or private data are skipped with a reason.
+
+
+## Analysis and comparison modules (added with the final evaluation)
+
+| module | role |
+|---|---|
+| `rl.eval_systems` | scores the outputs of several systems on the same test items with the evaluator and every rule (no LLM calls); paired differences with bootstrap intervals |
+| `rl.eval_samples` | best-of-N with the evaluator as selector; compares greedy, a random sample, the evaluator's pick and the oracle pick on chrF++ and evaluator score |
+| `sft.gen_samples` | N sampled completions per test prompt (temperature, top-p) with vLLM |
+| `judging.judge_v2` | builds the standard system-blind judge requests (six criteria per task) for several systems, shuffled together; Gemini Batch API only |
+| `judging.judge_prompt_sensitivity` | builds the old strict compact-prompt requests for the same items, to measure prompt sensitivity |

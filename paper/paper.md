@@ -4,7 +4,7 @@
 
 ## Abstract
 
-We fine-tune a 301M-parameter decoder (the SFT model) to write human-style code-switched text and idiom-rich text in 37 African languages, and we use reinforcement learning (GRPO) to improve it. The reward is a learned, reference-free evaluator (a fine-tuned mmBERT-base with 27 rating heads) combined with deterministic rule penalties. Our main finding is a negative one about the reward: when the evaluator alone supplied the reward (plus a small set of rules), the proxy reward rose from 0.37 to 0.61 while an independent reference metric fell by about 7 chrF++ on the two code-switching tasks, and English leaked into the output. The failure is invisible to the evaluator, which we show is also a weak judge of translation quality against human ratings (Spearman 0.25 vs 0.49 for SSA-COMET-QE) and blind to hallucinated additions. Adding the missing rules (language-ID guards, function-word and stop-word checks, diacritic, name, number, length, repetition and device-use penalties), a reference-free translation metric, fresh prompts that never occur in the SFT data, and a held-out chrF monitor limits the degradation: after about 750 steps the monitor reward is 0.44 (from 0.07) and average held-out chrF is flat (47.35 vs 47.49), but the average hides a trade-off: the idiom tasks improve (+0.3 to +2.1 chrF++) while the code-switching tasks fall (eng_hm -2.9, m_hm -1.9). We also report a negative interpretability result: the six group tokens we added to the evaluator did not specialise.
+We fine-tune a 301M-parameter decoder (the SFT model) to write human-style code-switched text and idiom-rich text in 37 African languages, and we use reinforcement learning (GRPO) to improve it. The reward is a learned, reference-free evaluator (a fine-tuned mmBERT-base with 27 rating heads) combined with deterministic rule penalties. Our main finding is a negative one about the reward: when the evaluator alone supplied the reward (plus a small set of rules), the proxy reward rose from 0.37 to 0.61 while an independent reference metric fell by about 7 chrF++ on the two code-switching tasks, and English leaked into the output. The failure is invisible to the evaluator, which we show is also a weak judge of translation quality against human ratings (Spearman 0.25 vs 0.49 for SSA-COMET-QE) and blind to hallucinated additions. Adding the missing rules (language-ID guards, function-word and stop-word checks, diacritic, name, number, length, repetition and device-use penalties), a reference-free translation metric, fresh prompts that never occur in the SFT data, and a held-out chrF monitor limits the degradation. On the full SFT test set (6,230 items, 34 languages, greedy decoding) the final policy changes chrF++ by +0.8 to +1.3 on the three idiom tasks and by -0.7 and -1.0 on the two code-switching tasks; format validity rises from about 95% to 99.8%; and the mean reward rises from 0.14-0.53 to 0.28-0.74. Only about a quarter of that reward gain comes from the learned evaluator; about three quarters comes from the rules. An independent comparison with a single LLM judge (Gemini 3.8 Flash, a standard system-blind rubric, 1,000 items) finds no significant overall change from the SFT model to the RL policy (-0.015 on a 1-5 scale, 95% CI [-0.055, +0.025]), a significant decline on one code-switching task (-0.24), and a gap of 1.2 points to the text of the data-generation model: the reward gains do not translate into judged quality. We also report a negative interpretability result: the six group tokens added to the evaluator did not specialise.
 
 ## 1. Introduction
 
@@ -104,22 +104,121 @@ With the evaluator plus six rules (length, loop, number, English, switch share, 
 
 *Fig. 5. Monitor reward by task (left) and held-out reference chrF++ (right). Dotted lines mark reward changes.*
 
-Training from the SFT model with the full reward and the fresh pool (Fig. 5): monitor reward 0.065 to 0.436 after about 650 steps (m_ood 0.25 to 0.63, hm_ood 0.14 to 0.61, eng_m 0.20 to 0.38, m_hm 0.11 to 0.41, eng_ood -0.17 to 0.40, eng_hm -0.14 to 0.19); format failures 12% to 0.1%; reference chrF++ 47.33 after 650 steps and 47.35 at step 750 against 47.49 for the SFT model. **By task, the average hides a trade-off** (SFT -> step 750, 60 prompts per task, noisy): eng_hm 52.8 -> 49.9, m_hm 59.3 -> 57.4, m_ood 47.6 -> 49.7, eng_ood 35.4 -> 37.0, hm_ood 42.4 -> 42.7; most of the hm decline occurs in the first 650 steps and is flat over the last 100. A milder version of the run-2 pattern: reward up (eng_hm monitor reward 0.015 to 0.21), reference similarity down. The reward definition changed at step 100 (QE weight and per-language length windows) and at step 750 (stronger switch rule, confidence-weighted language ID, eng_hm drawn at 35% of each batch); curves are not comparable across those lines. **[pending]** final 1,500-step results, per-task held-out chrF++ on the SFT test set against the SFT model, and a human-or-judge comparison of the final and SFT outputs.
+Training from the SFT model with the full reward and the fresh pool (about 1,500 logged steps over several resumed segments; the reward definition changed at step 100 and at step 750, so curves are not comparable across the dotted lines): the greedy monitor reward rose from 0.065 to about 0.43 and then plateaued (0.40-0.44 over the last 350 steps); format failures fell from 12% to 0.1%. KL to the SFT model stayed between 0.10 and 0.20 per token (Fig. 6) and the hard cut at 0.35 was never triggered. The 300-prompt held-out chrF monitor is noisy (about +-1-1.5 chrF++ per task at 60 prompts per task), so checkpoints are compared on the full test set.
 
-### 6.4 What the evaluator misses
+![Fig. 6. Per-token KL to the SFT model and the adaptive KL coefficient across the chained runs (left); mean training reward by KL octile (right; confounded with training phase).](figures/fig6_kl.png)
+
+*Fig. 6. Per-token KL to the SFT model and the adaptive KL coefficient across the chained runs (left); mean training reward by KL octile (right; confounded with training phase).*
+
+**Full SFT test set** (6,230 items, 34 languages; greedy decoding; chrF++ of the final text, macro over languages; the same vLLM decoder for all systems). "Best" is the highest-reward checkpoint that passed the per-task chrF guard; "latest" is the final policy.
+
+| task | SFT | RL best | RL latest | latest - SFT |
+|---|---|---|---|---|
+| eng_hm | 50.05 | 48.78 | 49.38 | -0.67 |
+| m_hm | 55.58 | 54.02 | 54.57 | -1.01 |
+| eng_ood | 35.69 | 36.47 | 36.44 | +0.75 |
+| m_ood | 40.49 | 41.78 | 41.75 | +1.26 |
+| hm_ood | 37.96 | 38.77 | 38.82 | +0.86 |
+
+Format validity (one device block, two or more devices, non-empty text) rises from 0.949 and 0.954 (eng_hm, m_hm) to 0.996 and 0.999, and is 1.000 on the idiom tasks; the English-function-word excess in code-switching outputs stays at about zero (-0.011 and -0.003 against -0.003 and +0.003 for the SFT model), unlike run 2 (+0.08 and +0.105). The latest checkpoint is at least as good as "best" on every task (the guard, built on 60-prompt monitors, selected on noise).
+
+![Fig. 7. chrF++ on the full SFT test set (left) and the change relative to the SFT model (right).](figures/fig7_test_chrf.png)
+
+*Fig. 7. chrF++ on the full SFT test set (left) and the change relative to the SFT model (right).*
+
+### 6.5 Where the reward gain comes from
+
+We scored the same 6,230 test outputs of each system with the final evaluator and, with no weights applied, each rule (greedy decoding; no API calls).
+
+| task | evaluator (1-5): SFT -> RL latest | reward: SFT -> RL latest | format failures: SFT -> RL latest |
+|---|---|---|---|
+| eng_hm | 3.013 -> 3.044 | 0.122 -> 0.283 | 2.0% -> 0.3% |
+| m_hm | 3.044 -> 3.099 | 0.141 -> 0.315 | 1.7% -> 0.1% |
+| eng_ood | 3.867 -> 4.173 | 0.473 -> 0.708 | 0.1% -> 0.0% |
+| m_ood | 3.891 -> 4.165 | 0.525 -> 0.742 | 0.1% -> 0.0% |
+| hm_ood | 3.715 -> 4.054 | 0.470 -> 0.704 | 0.0% -> 0.0% |
+
+Splitting the mean reward gain (+0.204 for latest, +0.210 for best; components sum to about 0.228 before clamping) gives: **evaluator score +0.054 (about 24-26%)**, **rule penalties +0.168 (about 74%)** and format gate +0.007 (about 3%). By task the evaluator accounts for 10-13% of the gain on the code-switching tasks and 32-36% on the idiom tasks. Most of the rule gain is device use (0.12 to 0.03 mean penalty), switch share (0.07 to 0.04), language ID (0.08 to 0.04), repetition (0.03 to 0.00), length and diacritics (Fig. 8). The model therefore did **not** improve "solely from the evaluator's feedback": the evaluator moved by +0.05 points on the 1-5 scale for code-switching and +0.3 for idioms, while most of the reward came from rules that the evaluator itself does not check. Whether the outputs are better in ways that matter is the question of the independent comparisons below.
+
+![Fig. 8. Decomposition of the reward gain (left) and rule penalties before and after RL (right).](figures/fig8_reward_decomposition.png)
+
+*Fig. 8. Decomposition of the reward gain (left; the black bar is the actual gain, components are approximate because of clamping) and mean rule penalties before and after RL (right).*
+
+### 6.5b Decoding: greedy, sampling and best-of-8 with the evaluator as selector
+
+For each test prompt we also drew eight samples (temperature 0.7, top-p 0.95) from the SFT model and from the latest RL policy, scored all nine candidates (greedy plus eight samples) with the final evaluator, and took the highest-scoring valid candidate (format failures rank last). No API calls were used. Corpus chrF++ is micro-averaged per task here, so absolute values are higher than the macro-over-languages numbers above; compare rows within the table.
+
+| system | task | greedy | random sample | evaluator pick | oracle (best chrF of 9) |
+|---|---|---|---|---|---|
+| SFT | eng_hm | 55.14 | 52.47 | 52.78 | 58.49 |
+| SFT | m_hm | 61.93 | 59.97 | 60.17 | 65.82 |
+| SFT | eng_ood | 38.70 | 38.91 | 39.07 | 42.74 |
+| SFT | m_ood | 40.89 | 40.77 | 40.94 | 44.67 |
+| SFT | hm_ood | 39.65 | 39.89 | 39.97 | 43.59 |
+| RL latest | eng_hm | 54.54 | 52.77 | 52.80 | 57.82 |
+| RL latest | m_hm | 61.21 | 60.17 | 59.78 | 64.89 |
+| RL latest | eng_ood | 38.60 | 37.89 | 37.82 | 41.57 |
+| RL latest | m_ood | 41.37 | 40.48 | 40.48 | 44.09 |
+| RL latest | hm_ood | 40.11 | 39.30 | 39.28 | 42.81 |
+
+Findings: (i) sampling does not improve the per-sample chrF++: it lowers it on the code-switching tasks (by 2-3 points) and leaves it unchanged for the SFT model on the idiom tasks, and lowers it by about 0.8 for the RL policy, which was trained against greedy-heavy penalties; (ii) the evaluator as a selector raises the evaluator score of the pick (for example SFT eng_hm 3.01 to 3.13, eng_ood 3.87 to 4.26) and cuts format failures (SFT eng_hm 2.0% to 0.3%) but does not raise chrF++ above the greedy output, and for the RL policy it is slightly below greedy; (iii) there is substantial headroom (the oracle pick is 3-4 chrF++ above greedy), so a better selector, not more sampling, is what would help; the evaluator is not that selector. For human preference collection, sampled candidates add diversity without a systematic quality gain per sample, and the greedy output remains the strongest single candidate by this measure.
+
+![Fig. 9. Greedy, random sample, evaluator pick and oracle pick: chrF++ (left) and evaluator score (right) for the SFT model (top) and the latest RL policy (bottom).](figures/fig9_best_of_8.png)
+
+*Fig. 9. Greedy, random sample, evaluator pick and oracle pick: chrF++ (left) and evaluator score (right) for the SFT model (top) and the latest RL policy (bottom).*
+
+
+
+### 6.5c Independent comparison with an LLM judge
+
+To test whether the reward gains correspond to judged quality, we graded 1,000 held-out test items (200 per task, spread over languages, same seed for all systems) for four systems with Gemini 3.8 Flash on the Batch API: the SFT model, the best and the latest RL checkpoint (greedy outputs), and the data-generation model's own curated text for the same items (the test references). The prompt is a standard, system-blind rubric (Appendix A): six criteria per task, integer anchors, no rule measurements, no forced grade distribution, requests of all systems shuffled together; 3,999 of 4,000 requests returned a parsable grade. Flash is also the judge that produced the evaluator's training labels, so this is not fully independent of the evaluator; cost limited us to one judge (actual batch cost $2.18).
+
+| task | SFT | RL best | RL latest | generator | RL latest - SFT (95% CI over items) |
+|---|---|---|---|---|---|
+| eng_hm | 3.581 | 3.572 | 3.591 | 4.438 | +0.010 [-0.073, +0.092] |
+| m_hm | 3.476 | 3.256 | 3.242 | 4.607 | -0.235 [-0.338, -0.131] |
+| eng_ood | 2.315 | 2.310 | 2.338 | 3.672 | +0.023 [-0.054, +0.097] |
+| m_ood | 2.385 | 2.458 | 2.434 | 3.695 | +0.049 [-0.043, +0.144] |
+| hm_ood | 2.271 | 2.382 | 2.350 | 3.721 | +0.079 [-0.006, +0.167] |
+| all | 2.805 | 2.795 | 2.791 | 4.027 | -0.015 [-0.055, +0.025] |
+
+![Fig. 10. Mean criterion score per system and task from Gemini 3.8 Flash with the standard prompt.](figures/fig10_flash_judge.png)
+
+*Fig. 10. Mean criterion score per system and task from Gemini 3.8 Flash with the standard prompt.*
+
+**The reward gains do not appear as judged quality.** Across all tasks the latest policy is indistinguishable from the SFT model (-0.015, CI includes zero); the only significant differences are a decline on m_hm (-0.24) and, for the best checkpoint, a small gain on hm_ood (+0.11 [+0.03, +0.20]). By criterion the code-switching outputs lose on meaning (3.24 to 3.04), switching naturalness (3.00 to 2.80) and overall (2.83 to 2.69) and are unchanged on language compliance (4.79); the idiom outputs gain on meaning (1.86 to 1.96), language correctness (2.34 to 2.43) and language compliance (4.65 to 4.81) but lose on idiom use (1.59 to 1.49). Head to head on the overall criterion, the latest policy beats SFT on 18-26% of items and loses on 17-33%, with 47-64% ties. Both models are far below the generator's own text (+1.2 points on average, 0.9-1.5 per task), which is the real quality gap. The rule penalties (format validity, repetition, device use, language ID) improved as intended, and the evaluator-selected gains are real in the sense of the reward, but they are not visible to an independent judge as better language.
+
+**Prompt sensitivity.** We re-graded a 300-item subset with the old strict prompt used to produce the evaluator's labels (the same Flash model, 1,198 graded pairs). The two prompts agree at Spearman 0.84 across (item, system) pairs and rank the generator far above the models in both. The old prompt, which shows the judge our rule measurements, scores the RL outputs higher than SFT on the idiom tasks (+0.2 to +0.3 on the dimension mean) and eng_hm (+0.1), where the standard prompt sees no change: part of what the training labels, and therefore the evaluator and the reward, reward is the rule signal itself.
+
+
+
+### 6.6 What the evaluator misses
 
 On 86 logged eng_m samples in AfriCOMET languages the evaluator and AfriCOMET-QE agree with Spearman 0.53; the evaluator scores Nigerian Pidgin about 0.35 higher than QE (0.74 vs 0.39) because it does not penalise appended hallucinated sentences. This motivated the QE term and the per-language length windows. **[pending]** whether the QE term changes eng_m outputs measurably.
 
 ## 7. Discussion
 
-*What we claim.* A learned reward from a weak evaluator, plus a handful of rules, can be driven up while an independent reference metric falls, in a low-resource setting, and we found it only because an independent metric existed. Rules that encode what the evaluator cannot see (language identity, function words, repetition, names, devices) reduced it in our setting (run 2: -7 chrF++ on both hm tasks; runs 6-7: -2 to -3, with idiom tasks improving), but did not remove it; the held-out reference monitor should be applied per task, not as an average, which hid the hm decline for 650 steps.
+*What we claim.* RL with this reward improved what the reward measures (format validity, repetition, device use, language identity, evaluator score) but, in a single-judge comparison, left judged quality unchanged overall and lower on one code-switching task. A learned reward from a weak evaluator, plus a handful of rules, can be driven up while an independent reference metric falls, in a low-resource setting, and we found it only because an independent metric existed. Rules that encode what the evaluator cannot see (language identity, function words, repetition, names, devices) reduced it in our setting (run 2: -7 chrF++ on both hm tasks; runs 6-7 on the full test set: -0.7 and -1.0, with the idiom tasks improving by 0.8-1.3), but did not remove it. Most of the reward gain came from the rules, not from the evaluator; and the held-out reference monitor should be applied per task, not as an average, which hid the code-switching decline.
 
 *What we do not claim.* We did not test the hypothesis that overoptimisation sets in earlier or harder than with English reward models: there is no English control, one failure run, endpoint rather than curve measurements of the gold-like metric in run 2, and the independent higher-model gold judge for a proper proxy-versus-gold curve is paused. The monitor and the reward share the evaluator, so monitor gains are not independent evidence of quality; only held-out chrF++ is, and it measures similarity to SFT-style references, which RL is not trying to maximise.
 
 ## 8. Limitations and ethics
 
-Small model; one seed per configuration; LLM-judge labels (no human ratings of code-switching quality); the switch-share rule penalises 29-36% of human references; GlotLID is unreliable on short mixed spans; number-word and diacritic tables are incomplete (8 languages have no diacritic block, number words exist for about 30 languages and are sparse); the switch-language table is a human-supplied list that includes pairs a native speaker may find unnatural. Generated text may be wrong or offensive in languages we cannot fully review.
+Small model; one seed per configuration; LLM-judge labels (no human ratings of code-switching quality), produced with a prompt that also showed the judge our own rule measurements (switch share, English-word share) and demanded that about half of all grades be 3 or lower, so the labels partly encode our rules and the evaluator cannot be read as an objective quality measure; cost limited thorough testing with several judges, so the independent comparison uses a single judge (Gemini 3.8 Flash), which also produced the evaluator's training labels and is therefore not fully independent of it; no human evaluation of code-switching quality (a blind candidate pool for human preference is released with the test set); the switch-share rule penalises 29-36% of human references; GlotLID is unreliable on short mixed spans; number-word and diacritic tables are incomplete (8 languages have no diacritic block, number words exist for about 30 languages and are sparse); the switch-language table is a human-supplied list that includes pairs a native speaker may find unnatural. Generated text may be wrong or offensive in languages we cannot fully review.
 
 ## 9. Availability
 
 Weights and data are available to reviewers on request. This document and the accompanying results package (tables, figures, logs and model cards) contain everything needed to evaluate the claims made here.
+
+## Appendix A. Judge prompt (standard v2)
+
+System prompt for the code-switching tasks (`{...}` are filled per item):
+
+> You are an expert evaluator of written African-language text, with native-level knowledge of {language} and {switch_language}.
+> A text-generation system was given an INPUT and asked to rewrite it as natural code-switched text that mixes {language} (the base language) with {switch_language}. You will see the INPUT, the meaning of the input in English, and the system's OUTPUT.
+> Anchors (every criterion): 5 = fully correct, a native speaker would change nothing; 4 = minor issues that do not affect understanding; 3 = noticeable issues; 2 = serious issues that affect meaning or naturalness; 1 = unusable or wrong.
+> Rate the OUTPUT only; ignore its length. Rate each criterion independently, using only what is written in the INPUT and OUTPUT. If you cannot judge a criterion in this language, give null; do not guess.
+> Criteria: meaning (all information kept, nothing added or changed); base_language (grammar, word choice, spelling and orthography including diacritics of the {language} parts); switch_language (the same for the {switch_language} parts); language_compliance (every word is in {language} or {switch_language}; 1 = a third language or untranslated material dominates); switching_naturalness (switches happen where real bilingual speakers switch, in units that fit the grammar; 1 = random, forced or word-by-word substitution); overall.
+> Reply with one JSON object: {"scores": {...}, "issues": [up to 3 short strings]}
+
+For the idiom tasks the opening is "...rewrite it as informal, idiomatic {language}, using idioms, proverbs or expressions that native speakers really use", the criteria are meaning, language_correctness, idiom_use (real, apt and correctly used; null if it cannot be verified), naturalness, language_compliance (the base language, with occasional words of the languages allowed for it) and overall. The user message is a JSON object with the language, the switch language (code-switching tasks), the input as the system received it, the meaning of the input in English and the output (final text only; language tags and the device list removed). Temperature 0, thinking level low, one request per (item, system), all systems and tasks shuffled together.
