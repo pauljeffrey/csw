@@ -8,7 +8,7 @@ Results only: tables, figures and logs behind the paper (`../paper/paper.pdf`). 
 | `sft_ablations/` | the SFT ablation report (start model, depth, glossed devices, English draft) with its raw result files |
 | `judges/` | LLM-judge validation against human ratings, with costs |
 | `rl/logs/` | per-step training logs and periodic monitor logs of the RL runs (run 1-2: evaluator-led reward; runs 4-7: rule-anchored reward; runs 6-7 are split into resumed segments); `rl/sft_test_chrf/` the SFT-test chrF++ of the SFT model and of RL run 2 |
-| `test_set/` | evaluator and rule scores of the SFT model, RL best and RL latest on the full SFT test set (per task, per item, rule penalties, paired differences) and chrF++ of each system |
+| `test_set/` | `HUMAN_SET_PROTOCOL.md` (design and reporting rule of the human preference pool; the pool itself is private); evaluator and rule scores of the SFT model, RL best and RL latest on the full SFT test set (per task, per item, rule penalties, paired differences) and chrF++ of each system |
 | `samples/` | best-of-8 with the evaluator as selector: per-task summaries and per-item scores of the nine candidates |
 | `judge_flash_v2_full/` | Gemini 3.8 Flash grades of the full test set for four systems with the standard prompt (analysis tables per task, criterion and language, scores, diffs) |
 | `judge_argon_v2/` | Gemini 4 Argon cross-check on 1,000 stratified items (same prompt) |
